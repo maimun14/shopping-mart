@@ -1,0 +1,354 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Shopping Mart Clone',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const MainScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key);
+
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+  final Cart _cart = Cart();
+
+  static List<Widget> _widgetOptions(Cart cart, Function() updateCart) => <Widget>[
+    HomeScreen(cart: cart, updateCart: updateCart),
+    MyOrdersScreen(cart: cart),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void _viewCart() {
+    setState(() {
+      _selectedIndex = 1; // Switch to My Orders screen
+    });
+  }
+
+  void _updateCart() {
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Shopping Mart'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.green,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 0;
+                  Navigator.pop(context);
+                });
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.shopping_cart),
+              title: Text('My Orders'),
+              onTap: () {
+                setState(() {
+                  _selectedIndex = 1;
+                  Navigator.pop(context);
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+      body: _widgetOptions(_cart, _updateCart).elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Orders',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        onTap: _onItemTapped,
+      ),
+      floatingActionButton: _selectedIndex == 0 && _cart.items.isNotEmpty
+          ? FloatingActionButton.extended(
+        onPressed: _viewCart,
+        label: Text('View Cart (${_cart.items.length})'),
+        icon: const Icon(Icons.shopping_cart),
+        backgroundColor: Colors.blue,
+      )
+          : null,
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  final Cart cart;
+  final Function() updateCart;
+
+  HomeScreen({Key? key, required this.cart, required this.updateCart}) : super(key: key);
+
+  final List<CategoryItem> categories = [
+    CategoryItem(
+      name: 'Mens Wear',
+      imagePath: 'assets/images/shirt.jpg',
+      items: [
+        ProductItem(name: 'Shirts', price: 500),
+        ProductItem(name: 'Jeans', price: 700),
+        ProductItem(name: 'Tees', price: 200),
+        ProductItem(name: 'Hoodies', price: 450),
+      ],
+    ),
+    CategoryItem(
+      name: 'Women Wear',
+      imagePath: 'assets/images/tees.jpg',
+      items: [
+        ProductItem(name: 'Salwar', price: 1000),
+        ProductItem(name: 'Kurti', price: 500),
+        ProductItem(name: 'Lehanga', price: 2000),
+        ProductItem(name: 'Tees', price: 250),
+        ProductItem(name: 'Jeans', price: 600),
+        ProductItem(name: 'Skirts', price: 500),
+      ],
+    ),
+    CategoryItem(
+      name: 'Makeup',
+      imagePath: 'assets/images/makeup.jpg',
+      items: [
+        ProductItem(name: 'Foundation', price: 250),
+        ProductItem(name: 'Eyeliner', price: 170),
+        ProductItem(name: 'Kajal', price: 200),
+        ProductItem(name: 'Lipsticks', price: 150),
+        ProductItem(name: 'Face Wash', price: 280),
+      ],
+    ),
+    CategoryItem(
+      name: 'Personal Care',
+      imagePath: 'assets/images/personalcare.jpg',
+      items: [
+        ProductItem(name: 'Shampoo', price: 280),
+        ProductItem(name: 'Soap', price: 100),
+        ProductItem(name: 'Toothpaste', price: 120),
+        ProductItem(name: 'Skincare Products', price: 500),
+        ProductItem(name: 'Deodorant', price: 350),
+      ],
+    ),
+    CategoryItem(
+      name: 'Jewellery',
+      imagePath: 'assets/images/jewellery.jpg',
+      items: [
+        ProductItem(name: 'Mens Watches', price: 2000),
+        ProductItem(name: 'Womens Watches', price: 3500),
+        ProductItem(name: 'Earrings', price: 250),
+        ProductItem(name: 'Hair Accessories', price: 200),
+      ],
+    ),
+    CategoryItem(
+      name: 'Baby Products',
+      imagePath: 'assets/images/babyproducts.jpg',
+      items: [
+        ProductItem(name: 'Shampoo', price: 150),
+        ProductItem(name: 'Lotion', price: 200),
+        ProductItem(name: 'Kajal', price: 100),
+        ProductItem(name: 'Powder', price: 120),
+        ProductItem(name: 'Soap', price: 250),
+      ],
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      children: List.generate(categories.length, (index) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CategoryScreen(
+                  category: categories[index],
+                  cart: cart,
+                  updateCart: updateCart,
+                ),
+              ),
+            );
+          },
+          child: Card(
+            margin: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  categories[index].imagePath,
+                  height: 100, // Adjust height as needed
+                ),
+                SizedBox(height: 8),
+                Text(
+                  categories[index].name,
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class CategoryScreen extends StatefulWidget {
+  final CategoryItem category;
+  final Cart cart;
+  final Function() updateCart;
+
+  const CategoryScreen({Key? key, required this.category, required this.cart, required this.updateCart})
+      : super(key: key);
+
+  @override
+  _CategoryScreenState createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  void _viewCart(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyOrdersScreen(cart: widget.cart),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.category.name),
+      ),
+      body: ListView.builder(
+        itemCount: widget.category.items.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(widget.category.items[index].name),
+            subtitle: Text('\$${widget.category.items[index].price.toStringAsFixed(2)}'),
+            trailing: IconButton(
+              icon: const Icon(Icons.add_shopping_cart),
+              onPressed: () {
+                widget.cart.addItem(widget.category.items[index]);
+                widget.updateCart();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${widget.category.items[index].name} added to cart')),
+                );
+              },
+            ),
+          );
+        },
+      ),
+      floatingActionButton: widget.cart.items.isNotEmpty
+          ? FloatingActionButton.extended(
+        onPressed: () => _viewCart(context),
+        label: Text('View Cart (${widget.cart.items.length})'),
+        icon: Icon(Icons.shopping_cart),
+        backgroundColor: Colors.blue,
+      )
+          : null,
+    );
+  }
+}
+
+class MyOrdersScreen extends StatelessWidget {
+  final Cart cart;
+
+  const MyOrdersScreen({Key? key, required this.cart}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('My Orders'),
+      ),
+      body: ListView.builder(
+        itemCount: cart.items.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(cart.items[index].name),
+            subtitle: Text('\$${cart.items[index].price.toStringAsFixed(2)}'),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class CategoryItem {
+  final String name;
+  final List<ProductItem> items;
+  final String imagePath;
+
+  CategoryItem({
+    required this.name,
+    required this.items,
+    required this.imagePath,
+  });
+}
+
+class ProductItem {
+  final String name;
+  final double price;
+
+  ProductItem({
+    required this.name,
+    required this.price,
+  });
+}
+
+class Cart {
+  final List<ProductItem> _items = [];
+
+  List<ProductItem> get items => _items;
+
+  void addItem(ProductItem item) {
+    _items.add(item);
+  }
+}
